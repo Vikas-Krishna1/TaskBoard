@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:8080/api/auth";
+const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
+;
 
 window.onload = () => {
   document.getElementById("email").value = "";

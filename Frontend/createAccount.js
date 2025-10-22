@@ -1,4 +1,6 @@
 // createAccount.js
+const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("createForm");
   const msg = document.getElementById("create-message");
