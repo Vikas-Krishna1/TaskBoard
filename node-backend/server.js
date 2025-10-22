@@ -17,15 +17,19 @@ const allowedOrigins = [
   "https://taskboard-ui.netlify.app", // your frontend URL
   "http://localhost:5500",            // for local testing
 ];
-app.use(cors({
-  origin: ["https://stellar-manatee-39411a.netlify.app"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: [
+      "http://127.0.0.1:5500", // local dev (Live Server)
+      "http://localhost:5500",
+      "https://stellar-manatee-39411a.netlify.app", // your Netlify front-end
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-
-app.get("/", (req, res) => {
-  res.send("✅ TaskBoard Backend Running");
-});
+app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);

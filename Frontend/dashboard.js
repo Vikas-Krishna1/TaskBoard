@@ -1,4 +1,4 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api";
+const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
 const token = localStorage.getItem("token");
 if (!token) window.location.href = "login.html";
 
@@ -18,38 +18,50 @@ const logoutBtn = document.getElementById("logout-btn");
 
 let selectedDate = new Date();
 let selectedTask = null;
-let allTasksCache = [];
 
-// --- Calendar Rendering ---
+// ---------- CALENDAR ----------
 function renderCalendar() {
   calendar.innerHTML = "";
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth();
+  const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   document.querySelector(".calendar-section h2").textContent =
-    `Calendar — ${selectedDate.toLocaleString("default", { month: "long" })} ${year}`;
+    `📅 ${selectedDate.toLocaleString("default", { month: "long" })} ${year}`;
+
+  // Pad empty cells before 1st day
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    const empty = document.createElement("div");
+    empty.className = "calendar-day empty";
+    calendar.appendChild(empty);
+  }
 
   for (let i = 1; i <= daysInMonth; i++) {
-    const dayDiv = document.createElement("div");
     const date = new Date(year, month, i);
+    const dayDiv = document.createElement("div");
     dayDiv.textContent = i;
     dayDiv.className = "calendar-day";
     if (date.toDateString() === new Date().toDateString()) dayDiv.classList.add("today");
+
     dayDiv.addEventListener("click", () => openTaskListForDate(date));
     calendar.appendChild(dayDiv);
   }
 }
 
-// --- Fetch Tasks ---
+// ---------- FETCH TASKS ----------
 async function loadTasks() {
-  const res = await fetch(`${API_URL}/tasks`, { headers });
-  const data = await res.json();
-  allTasksCache = data;
-  return data;
+  try {
+    const res = await fetch(`${API_URL}/tasks`, { headers });
+    if (!res.ok) throw new Error("Failed to fetch tasks");
+    return await res.json();
+  } catch (err) {
+    console.error("Task load error:", err.message);
+    return [];
+  }
 }
 
-// --- Open Tasks for a Date ---
+// ---------- TASKS FOR DATE ----------
 async function openTaskListForDate(date) {
   selectedDate = date;
   const allTasks = await loadTasks();
@@ -58,18 +70,28 @@ async function openTaskListForDate(date) {
   renderAgenda(allTasks);
 }
 
-// --- Render Task List ---
+// ---------- TASK LIST ----------
 function renderTaskList(tasks) {
   taskList.innerHTML = "";
+  if (tasks.length === 0) {
+    taskList.innerHTML = `<p style="text-align:center;color:#999;">No tasks for this date</p>`;
+    return;
+  }
+
   tasks.forEach(task => {
     const div = document.createElement("div");
     div.className = "task-bubble";
     div.innerHTML = `
-      <input type="checkbox" class="task-check" ${task.completed ? "checked" : ""}/>
-      <span>${task.title}</span>
+      <label class="task-label">
+        <input type="checkbox" class="task-check" ${task.completed ? "checked" : ""}/>
+        <span class="task-title ${task.completed ? "done" : ""}">${task.title}</span>
+      </label>
       <small>${task.time || ""} (${task.duration || 0}m)</small>
     `;
-    div.querySelector(".task-check").addEventListener("change", async () => {
+
+    // Toggle complete
+    div.querySelector(".task-check").addEventListener("change", async (e) => {
+      e.stopPropagation();
       await fetch(`${API_URL}/tasks/${task._id}`, {
         method: "PUT",
         headers,
@@ -77,12 +99,17 @@ function renderTaskList(tasks) {
       });
       openTaskListForDate(selectedDate);
     });
-    div.addEventListener("click", () => openTaskModal(task));
+
+    // Open modal for edit
+    div.addEventListener("click", (e) => {
+      if (e.target.tagName !== "INPUT") openTaskModal(task);
+    });
+
     taskList.appendChild(div);
   });
 }
 
-// --- Agenda (Week view) ---
+// ---------- WEEKLY AGENDA ----------
 function renderAgenda(allTasks) {
   const startOfWeek = new Date(selectedDate);
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -92,19 +119,21 @@ function renderAgenda(allTasks) {
   agendaList.innerHTML = "";
   allTasks
     .filter(t => new Date(t.date) >= startOfWeek && new Date(t.date) <= endOfWeek)
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
     .forEach(task => {
       const div = document.createElement("div");
       div.className = "agenda-item";
-      div.textContent = `${new Date(t.date).toLocaleDateString()}: ${t.title}`;
+      const dateStr = new Date(task.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      div.textContent = `${dateStr}: ${task.title}`;
       agendaList.appendChild(div);
     });
 }
 
-// --- Notes Save ---
+// ---------- NOTES ----------
 notesArea.value = localStorage.getItem("notes") || "";
 notesArea.addEventListener("input", () => localStorage.setItem("notes", notesArea.value));
 
-// --- Modal Control ---
+// ---------- MODAL ----------
 function openTaskModal(task = null) {
   selectedTask = task;
   document.getElementById("task-title-input").value = task?.title || "";
@@ -114,119 +143,56 @@ function openTaskModal(task = null) {
   document.getElementById("task-duration-input").value = task?.duration || "";
   modal.classList.remove("hidden");
 }
-closeBtn.addEventListener("click", () => (modal.classList.add("hidden")));
+
+closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
 addTaskBtn.addEventListener("click", () => openTaskModal());
 
-// --- Save or Update Task ---
+// ---------- SAVE / UPDATE ----------
 saveBtn.addEventListener("click", async () => {
   const task = {
-    title: document.getElementById("task-title-input").value,
-    description: document.getElementById("task-desc-input").value,
+    title: document.getElementById("task-title-input").value.trim(),
+    description: document.getElementById("task-desc-input").value.trim(),
     date: document.getElementById("task-date-input").value,
     time: document.getElementById("task-time-input").value,
     duration: document.getElementById("task-duration-input").value,
   };
-  if (selectedTask) {
-    await fetch(`${API_URL}/tasks/${selectedTask._id}`, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify(task),
-    });
-  } else {
-    await fetch(`${API_URL}/tasks`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(task),
-    });
+  if (!task.title) return alert("Please enter a task title.");
+
+  try {
+    const method = selectedTask ? "PUT" : "POST";
+    const url = selectedTask ? `${API_URL}/tasks/${selectedTask._id}` : `${API_URL}/tasks`;
+    await fetch(url, { method, headers, body: JSON.stringify(task) });
+    modal.classList.add("hidden");
+    openTaskListForDate(selectedDate);
+  } catch (err) {
+    console.error("Save failed:", err.message);
   }
-  modal.classList.add("hidden");
-  openTaskListForDate(selectedDate);
 });
 
-// --- Delete Task ---
+// ---------- DELETE ----------
 deleteBtn.addEventListener("click", async () => {
   if (!selectedTask) return;
-  await fetch(`${API_URL}/tasks/${selectedTask._id}`, {
-    method: "DELETE",
-    headers,
-  });
-  modal.classList.add("hidden");
-  openTaskListForDate(selectedDate);
+  if (!confirm("Delete this task?")) return;
+
+  try {
+    await fetch(`${API_URL}/tasks/${selectedTask._id}`, {
+      method: "DELETE",
+      headers,
+    });
+    modal.classList.add("hidden");
+    openTaskListForDate(selectedDate);
+  } catch (err) {
+    console.error("Delete failed:", err.message);
+  }
 });
 
-// --- Logout ---
+// ---------- LOGOUT ----------
 logoutBtn.addEventListener("click", () => {
   localStorage.clear();
   window.location.href = "login.html";
 });
 
-
-// --- Notification Setup ---
-async function requestNotificationPermission() {
-  if (Notification.permission !== "granted") {
-    await Notification.requestPermission();
-  }
-}
-
-// --- Browser Notification ---
-function checkAndNotifyTasks() {
-  const now = new Date();
-  allTasksCache.forEach(task => {
-    if (!task.time || task.completed) return;
-    const taskTime = new Date(`${task.date}T${task.time}`);
-    const diff = (taskTime - now) / 1000 / 60; // in minutes
-    if (diff > 14 && diff < 16) {
-      showInAppNotification(`⏰ ${task.title} starts in 15 minutes!`);
-      new Notification("⏰ Task Reminder", {
-        body: `${task.title} starts in 15 minutes.`,
-        icon: "assets/logo.svg",
-      });
-    }
-  });
-}
-
-// --- In-App Toast Notification ---
-function showInAppNotification(message) {
-  let toast = document.createElement("div");
-  toast.className = "inapp-toast";
-  toast.textContent = message;
-  document.body.appendChild(toast);
-
-  setTimeout(() => toast.classList.add("show"), 100);
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 500);
-  }, 5000);
-}
-
-// --- Inject Simple Toast Styles ---
-const style = document.createElement("style");
-style.textContent = `
-.inapp-toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #222;
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 8px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.4s ease;
-  z-index: 9999;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  font-size: 0.9rem;
-}
-.inapp-toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}`;
-document.head.appendChild(style);
-
-// --- Init ---
+// ---------- INIT ----------
 renderCalendar();
-openTaskListForDate(selectedDate);
-requestNotificationPermission();
 
-// Check every minute for reminders
-setInterval(checkAndNotifyTasks, 60000);
+openTaskListForDate(selectedDate);

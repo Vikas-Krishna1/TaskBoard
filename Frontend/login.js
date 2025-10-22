@@ -1,35 +1,26 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
-;
+const API_URL = "https://taskboard-2llo.onrender.com/api";
 
-window.onload = () => {
-  document.getElementById("email").value = "";
-  document.getElementById("password").value = "";
-};
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const msg = document.getElementById("message");
 
-  msg.textContent = "";
+  if (!email || !password) return alert("Please fill all fields");
+
   try {
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message || "Login failed");
-    }
-
     const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed");
+
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
     window.location.href = "index.html";
   } catch (err) {
-    msg.textContent = err.message;
-    msg.className = "error";
+    alert("Error: " + err.message);
   }
-}
+});

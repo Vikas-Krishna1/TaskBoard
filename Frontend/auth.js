@@ -1,12 +1,18 @@
-// 🔗 Use your actual Render backend URL below
+// auth.js — Handles Login, Register, and Logout
 const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
 
 
+// Helper to show messages
+function showMessage(msg, type = "info") {
+  const messageBox = document.getElementById("message");
+  messageBox.textContent = msg;
+  messageBox.className = type;
+}
 
+// LOGIN
 async function login() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const msg = document.getElementById("message");
 
   try {
     const res = await fetch(`${API_URL}/login`, {
@@ -22,19 +28,20 @@ async function login() {
 
     const data = await res.json();
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data));
-    window.location.href = "index.html";
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showMessage("✅ Login successful! Redirecting...", "success");
+
+    setTimeout(() => (window.location.href = "index.html"), 1000);
   } catch (err) {
-    msg.textContent = `⚠️ ${err.message}`;
-    msg.className = "error";
+    showMessage("❌ " + err.message, "error");
   }
 }
 
+// REGISTER
 async function register() {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const msg = document.getElementById("message");
 
   try {
     const res = await fetch(`${API_URL}/register`, {
@@ -48,17 +55,24 @@ async function register() {
       throw new Error(err.message || "Registration failed");
     }
 
-    msg.textContent = "✅ Account created! Redirecting to login...";
-    msg.className = "success";
-    setTimeout(() => (window.location.href = "login.html"), 1200);
+    showMessage("✅ Account created! Redirecting to login...", "success");
+    setTimeout(() => (window.location.href = "login.html"), 1500);
   } catch (err) {
-    msg.textContent = `⚠️ ${err.message}`;
-    msg.className = "error";
+    showMessage("❌ " + err.message, "error");
   }
 }
 
+// LOGOUT
 function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   window.location.href = "login.html";
 }
+
+// Expose functions globally
+window.login = login;
+window.register = register;
+window.logout = logout;
+
+// ---------- END OF auth.js ----------
+
