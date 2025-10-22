@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TaskBoard Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="auth.js"></script>
+  <script defer src="dashboard.js"></script>
+</head>
+<body>
+  <!-- loading -->
+  <div id="loading-screen" class="loading-screen hidden"><div class="spinner"></div></div>
+
+  <header class="header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <h1>📓 TaskBoard</h1>
+      <div style="font-size:0.9rem;color:var(--white);opacity:0.85">Organize. Plan. Ship.</div>
+    </div>
+    <div class="controls">
+      <div id="view-controls" style="display:flex;gap:8px;align-items:center">
+        <button id="toggle-view" class="btn gold">Week View</button>
+        <button id="today-btn" class="btn ghost">Today</button>
+      </div>
+      <button id="logout-btn" class="btn gold" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <!-- Tasks Left -->
+    <section class="panel tasks-panel">
+      <h2>Tasks</h2>
+      <ul id="task-list" class="task-list"></ul>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="open-add" class="btn gold">+ Add Task</button>
+        <button id="refresh-btn" class="btn">Refresh</button>
+      </div>
+    </section>
+
+    <!-- Calendar Center -->
+    <section class="panel calendar-panel">
+      <h2>Calendar</h2>
+      <div class="cal-controls">
+        <div id="month-label" style="font-weight:700;color:var(--gold)"></div>
+      </div>
+      <div id="calendar-grid" class="cal-grid"></div>
+    </section>
+
+    <!-- Agenda Right -->
+    <section class="panel agenda-panel">
+      <h2>Agenda (This Week)</h2>
+      <ul id="agenda-list" class="agenda-list"></ul>
+    </section>
+  </main>
+
+  <!-- Notes bottom full width -->
+  <section class="panel notes-panel">
+    <h2>Notes — <span id="notes-date"></span></h2>
+    <textarea id="notes-area" placeholder="Notes for selected date..."></textarea>
+    <div style="display:flex;justify-content:flex-end"><button id="save-notes" class="btn gold">Save Notes</button></div>
+  </section>
+
+  <!-- Modal -->
+  <div id="task-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title">New Task</h3>
+      <input id="title" placeholder="Title" />
+      <textarea id="desc" placeholder="Description"></textarea>
+      <div style="display:flex;gap:8px">
+        <input id="date" type="date" style="flex:1" />
+        <input id="time" type="time" style="width:120px"/>
+        <input id="duration" type="number" min="0" placeholder="mins" style="width:90px"/>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:10px;gap:8px">
+        <button id="save-task" class="btn gold">Save</button>
+        <button id="cancel-task" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-wrapper"></div>
+</body>
+</html>
