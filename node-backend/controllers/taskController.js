@@ -1,76 +1,37 @@
-import asyncHandler from "express-async-handler";
-import Task from "../models/Task.js";
+import Task from "../models/taskModel.js";
 
-// @desc Get all tasks for logged-in user
-// @route GET /api/tasks
-// @access Private
-export const getTasks = asyncHandler(async (req, res) => {
-  const tasks = await Task.find({ user: req.user.id }).sort({ date: 1 });
-  res.json(tasks);
-});
-
-// @desc Create new task
-// @route POST /api/tasks
-// @access Private
-export const createTask = asyncHandler(async (req, res) => {
-  const { title, description, date, time, duration } = req.body;
-
-  if (!title || !date) {
-    res.status(400);
-    throw new Error("Please provide a title and date");
+export const getTasks = async (req, res, next) => {
+  try {
+    const tasks = await Task.find({ user: req.user._id });
+    res.json(tasks);
+  } catch (err) {
+    next(err);
   }
+};
 
-  const task = await Task.create({
-    user: req.user.id,
-    title,
-    description,
-    date,
-    time,
-    duration,
-  });
-
-  res.status(201).json(task);
-});
-
-// @desc Update a task
-// @route PUT /api/tasks/:id
-// @access Private
-export const updateTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
-
-  if (!task) {
-    res.status(404);
-    throw new Error("Task not found");
+export const createTask = async (req, res, next) => {
+  try {
+    const task = await Task.create({ ...req.body, user: req.user._id });
+    res.status(201).json(task);
+  } catch (err) {
+    next(err);
   }
+};
 
-  if (task.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("Not authorized");
+export const updateTask = async (req, res, next) => {
+  try {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(task);
+  } catch (err) {
+    next(err);
   }
+};
 
-  const updated = await Task.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-
-  res.json(updated);
-});
-
-// @desc Delete a task
-// @route DELETE /api/tasks/:id
-// @access Private
-export const deleteTask = asyncHandler(async (req, res) => {
-  const task = await Task.findById(req.params.id);
-
-  if (!task) {
-    res.status(404);
-    throw new Error("Task not found");
+export const deleteTask = async (req, res, next) => {
+  try {
+    await Task.findByIdAndDelete(req.params.id);
+    res.json({ message: "Task removed" });
+  } catch (err) {
+    next(err);
   }
-
-  if (task.user.toString() !== req.user.id) {
-    res.status(401);
-    throw new Error("Not authorized");
-  }
-
-  await task.deleteOne(); // ✅ Mongoose v7+ compatible
-  res.json({ message: "Task removed" });
-});
+};
