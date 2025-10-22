@@ -1,37 +1,56 @@
 import Task from "../models/taskModel.js";
+import { sendNotification } from "../services/notificationService.js";
 
-export const getTasks = async (req, res, next) => {
-  try {
-    const tasks = await Task.find({ user: req.user._id });
-    res.json(tasks);
-  } catch (err) {
-    next(err);
-  }
+// Get tasks
+export const getTasks = async (req, res) => {
+  const tasks = await Task.find({ user: req.user._id });
+  res.json(tasks);
 };
 
-export const createTask = async (req, res, next) => {
-  try {
-    const task = await Task.create({ ...req.body, user: req.user._id });
-    res.status(201).json(task);
-  } catch (err) {
-    next(err);
-  }
+// Create new task
+export const createTask = async (req, res) => {
+  const { title, description, date, time, duration } = req.body;
+  const task = await Task.create({
+    user: req.user._id,
+    title,
+    description,
+    date,
+    time,
+    duration,
+  });
+  await sendNotification({ message: `New task created: ${title}` });
+  res.status(201).json(task);
 };
 
-export const updateTask = async (req, res, next) => {
-  try {
-    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(task);
-  } catch (err) {
-    next(err);
+// Update task
+export const updateTask = async (req, res) => {
+  const task = await Task.findById(req.params.id);
+  if (!task) {
+    res.status(404);
+    throw new Error("Task not found");
   }
+  if (task.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error("Not authorized");
+  }
+
+  const updated = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  await sendNotification({ message: `Task updated: ${updated.title}` });
+  res.json(updated);
 };
 
-export const deleteTask = async (req, res, next) => {
-  try {
-    await Task.findByIdAndDelete(req.params.id);
-    res.json({ message: "Task removed" });
-  } catch (err) {
-    next(err);
+// Delete task
+export const deleteTask = async (req, res) => {
+  const task = await Task.findById(req.params.id);
+  if (!task) {
+    res.status(404);
+    throw new Error("Task not found");
   }
+  if (task.user.toString() !== req.user._id.toString()) {
+    res.status(401);
+    throw new Error("Not authorized");
+  }
+  await task.deleteOne();
+  await sendNotification({ message: `Task deleted: ${task.title}` });
+  res.json({ message: "Task removed" });
 };

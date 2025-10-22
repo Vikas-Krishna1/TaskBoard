@@ -3,7 +3,7 @@ import {
   getTasks,
   createTask,
   updateTask,
-  deleteTask,
+  deleteTask
 } from "../controllers/taskController.js";
 import { protect } from "../middleware/protectMiddleware.js";
 
