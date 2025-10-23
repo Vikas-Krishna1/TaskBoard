@@ -1,78 +1,60 @@
-// auth.js — Handles Login, Register, and Logout
-const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
+const API_URL = "https://taskboard-2llo.onrender.com/api";
 
+// ==== ELEMENTS ====
+const loginForm = document.getElementById("login-form");
+const signupForm = document.getElementById("signup-form");
+const messageBox = document.getElementById("message");
 
-// Helper to show messages
-function showMessage(msg, type = "info") {
-  const messageBox = document.getElementById("message");
-  messageBox.textContent = msg;
-  messageBox.className = type;
+// ==== HELPERS ====
+function showMessage(text, type = "info") {
+  messageBox.textContent = text;
+  messageBox.className = `msg ${type}`;
+  setTimeout(() => (messageBox.textContent = ""), 4000);
 }
 
-// LOGIN
-async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  try {
-    const res = await fetch(`${API_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message || "Login failed");
+// ==== LOGIN ====
+if (loginForm) {
+  loginForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
+      localStorage.setItem("token", data.token);
+      showMessage("Login successful! Redirecting...", "success");
+      setTimeout(() => (window.location.href = "dashboard.html"), 1000);
+    } catch (err) {
+      showMessage(err.message, "error");
     }
-
-    const data = await res.json();
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    showMessage("✅ Login successful! Redirecting...", "success");
-
-    setTimeout(() => (window.location.href = "index.html"), 1000);
-  } catch (err) {
-    showMessage("❌ " + err.message, "error");
-  }
+  });
 }
 
-// REGISTER
-async function register() {
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+// ==== SIGNUP ====
+if (signupForm) {
+  signupForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = e.target.name.value.trim();
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
 
-  try {
-    const res = await fetch(`${API_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(err.message || "Registration failed");
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Registration failed");
+      showMessage("Account created! Redirecting to login...", "success");
+      setTimeout(() => (window.location.href = "login.html"), 1200);
+    } catch (err) {
+      showMessage(err.message, "error");
     }
-
-    showMessage("✅ Account created! Redirecting to login...", "success");
-    setTimeout(() => (window.location.href = "login.html"), 1500);
-  } catch (err) {
-    showMessage("❌ " + err.message, "error");
-  }
+  });
 }
-
-// LOGOUT
-function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  window.location.href = "login.html";
-}
-
-// Expose functions globally
-window.login = login;
-window.register = register;
-window.logout = logout;
-
-// ---------- END OF auth.js ----------
-

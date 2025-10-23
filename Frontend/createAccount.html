@@ -1,24 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>TaskBoard — Create Account</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body class="auth-body">
-  <div class="auth-container">
-    <h1>🗒️ TaskBoard</h1>
-    <p class="subtitle">Create your account and get started!</p>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create Account — TaskBoard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-body">
+    <div class="auth-container">
+      <h1>🗒️ TaskBoard</h1>
+      <h2>Create Account</h2>
 
-    <input type="text" id="name" placeholder="Full Name" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button onclick="register()">Create Account</button>
+      <form id="register-form" class="auth-form">
+        <input
+          type="text"
+          id="name"
+          placeholder="Full name"
+          required
+        />
+        <input
+          type="email"
+          id="email"
+          placeholder="Email"
+          required
+        />
+        <input
+          type="password"
+          id="password"
+          placeholder="Password"
+          required
+        />
 
-    <p class="auth-link">Already have an account? <a href="login.html">Login</a></p>
-    <p id="message" class="message"></p>
-  </div>
+        <button type="submit" class="primary-btn full-width">Sign Up</button>
+      </form>
 
-  <script src="auth.js"></script>
-</body>
+      <p class="auth-link">
+        Already have an account? <a href="login.html">Login →</a>
+      </p>
+
+      <p id="register-message" class="auth-message"></p>
+    </div>
+
+    <footer class="footer">
+      <small>© 2025 TaskBoard</small>
+    </footer>
+
+    <script src="createAccount.js"></script>
+  </body>
 </html>

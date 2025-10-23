@@ -1,198 +1,224 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api/auth";
-const token = localStorage.getItem("token");
-if (!token) window.location.href = "login.html";
+// dashboard.js — Phase 3C (Interactive + Animated)
 
-const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+const API_BASE = "https://your-backend-url.onrender.com/api";
+let tasks = [];
+let selectedDate = new Date().toISOString().split("T")[0];
 
-const calendar = document.getElementById("calendar");
-const taskList = document.getElementById("task-list");
-const agendaList = document.getElementById("agenda-list");
-const notesArea = document.getElementById("notes-area");
+document.addEventListener("DOMContentLoaded", () => {
+  initDashboard();
+});
 
-const modal = document.getElementById("task-modal");
-const saveBtn = document.getElementById("save-task-btn");
-const deleteBtn = document.getElementById("delete-task-btn");
-const closeBtn = document.getElementById("close-modal-btn");
-const addTaskBtn = document.getElementById("add-task-btn");
-const logoutBtn = document.getElementById("logout-btn");
+function initDashboard() {
+  document.getElementById("add-task-btn").addEventListener("click", openAddModal);
+  document.getElementById("close-modal-btn").addEventListener("click", closeModal);
+  document.getElementById("save-task-btn").addEventListener("click", saveTask);
+  document.getElementById("delete-task-btn").addEventListener("click", deleteTask);
+  document.getElementById("logout-btn").addEventListener("click", logout);
 
-let selectedDate = new Date();
-let selectedTask = null;
-
-// ---------- CALENDAR ----------
-function renderCalendar() {
-  calendar.innerHTML = "";
-  const year = selectedDate.getFullYear();
-  const month = selectedDate.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  document.querySelector(".calendar-section h2").textContent =
-    `📅 ${selectedDate.toLocaleString("default", { month: "long" })} ${year}`;
-
-  // Pad empty cells before 1st day
-  for (let i = 0; i < firstDay.getDay(); i++) {
-    const empty = document.createElement("div");
-    empty.className = "calendar-day empty";
-    calendar.appendChild(empty);
-  }
-
-  for (let i = 1; i <= daysInMonth; i++) {
-    const date = new Date(year, month, i);
-    const dayDiv = document.createElement("div");
-    dayDiv.textContent = i;
-    dayDiv.className = "calendar-day";
-    if (date.toDateString() === new Date().toDateString()) dayDiv.classList.add("today");
-
-    dayDiv.addEventListener("click", () => openTaskListForDate(date));
-    calendar.appendChild(dayDiv);
-  }
+  loadTasks();
+  renderCalendar();
+  loadNotes();
 }
 
-// ---------- FETCH TASKS ----------
 async function loadTasks() {
   try {
-    const res = await fetch(`${API_URL}/tasks`, { headers });
-    if (!res.ok) throw new Error("Failed to fetch tasks");
-    return await res.json();
+    const res = await fetch(`${API_BASE}/tasks`);
+    tasks = await res.json();
+    renderTaskList();
+    renderAgenda();
   } catch (err) {
-    console.error("Task load error:", err.message);
-    return [];
+    console.error("Failed to fetch tasks:", err);
   }
 }
 
-// ---------- TASKS FOR DATE ----------
-async function openTaskListForDate(date) {
-  selectedDate = date;
-  const allTasks = await loadTasks();
-  const tasks = allTasks.filter(t => new Date(t.date).toDateString() === date.toDateString());
-  renderTaskList(tasks);
-  renderAgenda(allTasks);
-}
+function renderTaskList() {
+  const list = document.getElementById("task-list");
+  list.innerHTML = "";
 
-// ---------- TASK LIST ----------
-function renderTaskList(tasks) {
-  taskList.innerHTML = "";
   if (tasks.length === 0) {
-    taskList.innerHTML = `<p style="text-align:center;color:#999;">No tasks for this date</p>`;
+    list.innerHTML = `<p class="empty-msg">No tasks yet.</p>`;
     return;
   }
 
   tasks.forEach(task => {
-    const div = document.createElement("div");
-    div.className = "task-bubble";
-    div.innerHTML = `
-      <label class="task-label">
-        <input type="checkbox" class="task-check" ${task.completed ? "checked" : ""}/>
-        <span class="task-title ${task.completed ? "done" : ""}">${task.title}</span>
-      </label>
-      <small>${task.time || ""} (${task.duration || 0}m)</small>
+    const taskEl = document.createElement("div");
+    taskEl.className = `task-bubble ${task.completed ? "completed" : ""}`;
+    taskEl.innerHTML = `
+      <div class="bubble-top">
+        <input type="checkbox" class="task-check" ${task.completed ? "checked" : ""} data-id="${task._id}" />
+        <span class="task-title">${task.title}</span>
+      </div>
+      <div class="bubble-bottom">
+        <small>${task.date || "No date"} ${task.time || ""}</small>
+      </div>
     `;
 
-    // Toggle complete
-    div.querySelector(".task-check").addEventListener("change", async (e) => {
-      e.stopPropagation();
-      await fetch(`${API_URL}/tasks/${task._id}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({ completed: !task.completed }),
-      });
-      openTaskListForDate(selectedDate);
+    // Smooth animation
+    taskEl.style.opacity = 0;
+    list.appendChild(taskEl);
+    setTimeout(() => (taskEl.style.opacity = 1), 50);
+
+    // Add listeners
+    taskEl.addEventListener("click", (e) => {
+      if (e.target.classList.contains("task-check")) return;
+      openEditModal(task);
     });
 
-    // Open modal for edit
-    div.addEventListener("click", (e) => {
-      if (e.target.tagName !== "INPUT") openTaskModal(task);
-    });
-
-    taskList.appendChild(div);
+    taskEl.querySelector(".task-check").addEventListener("change", (e) => toggleTaskCompletion(task._id, e.target.checked));
   });
 }
 
-// ---------- WEEKLY AGENDA ----------
-function renderAgenda(allTasks) {
-  const startOfWeek = new Date(selectedDate);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-  agendaList.innerHTML = "";
-  allTasks
-    .filter(t => new Date(t.date) >= startOfWeek && new Date(t.date) <= endOfWeek)
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
-    .forEach(task => {
-      const div = document.createElement("div");
-      div.className = "agenda-item";
-      const dateStr = new Date(task.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
-      div.textContent = `${dateStr}: ${task.title}`;
-      agendaList.appendChild(div);
+async function toggleTaskCompletion(id, done) {
+  try {
+    await fetch(`${API_BASE}/tasks/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed: done }),
     });
+    tasks = tasks.map(t => (t._id === id ? { ...t, completed: done } : t));
+    renderTaskList();
+    renderAgenda();
+  } catch (err) {
+    console.error("Error toggling completion:", err);
+  }
 }
 
-// ---------- NOTES ----------
-notesArea.value = localStorage.getItem("notes") || "";
-notesArea.addEventListener("input", () => localStorage.setItem("notes", notesArea.value));
+function renderAgenda() {
+  const agenda = document.getElementById("agenda-list");
+  agenda.innerHTML = "";
 
-// ---------- MODAL ----------
-function openTaskModal(task = null) {
-  selectedTask = task;
-  document.getElementById("task-title-input").value = task?.title || "";
-  document.getElementById("task-desc-input").value = task?.description || "";
-  document.getElementById("task-date-input").value = task?.date?.split("T")[0] || selectedDate.toISOString().split("T")[0];
-  document.getElementById("task-time-input").value = task?.time || "";
-  document.getElementById("task-duration-input").value = task?.duration || "";
+  const dayTasks = tasks.filter(t => t.date === selectedDate);
+  if (dayTasks.length === 0) {
+    agenda.innerHTML = `<p class="empty-msg">No tasks for this day.</p>`;
+    return;
+  }
+
+  dayTasks.forEach(t => {
+    const el = document.createElement("div");
+    el.className = "agenda-item";
+    el.innerHTML = `
+      <span class="${t.completed ? "done" : ""}">${t.title}</span>
+      <small>${t.time || ""}</small>
+    `;
+    agenda.appendChild(el);
+  });
+}
+
+function renderCalendar() {
+  const calendar = document.getElementById("calendar");
+  calendar.innerHTML = "";
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const days = new Date(year, month + 1, 0).getDate();
+
+  for (let day = 1; day <= days; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const el = document.createElement("div");
+    el.className = "calendar-day";
+    if (dateStr === selectedDate) el.classList.add("selected");
+    if (dateStr === now.toISOString().split("T")[0]) el.classList.add("today");
+
+    const hasTask = tasks.some(t => t.date === dateStr);
+    if (hasTask) el.classList.add("has-task");
+
+    el.textContent = day;
+    el.addEventListener("click", () => {
+      selectedDate = dateStr;
+      renderCalendar();
+      renderAgenda();
+    });
+
+    calendar.appendChild(el);
+  }
+}
+
+function openAddModal() {
+  const modal = document.getElementById("task-modal");
   modal.classList.remove("hidden");
+  modal.dataset.mode = "add";
+  document.getElementById("modal-title").textContent = "Add Task";
+  clearModalInputs();
 }
 
-closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
-addTaskBtn.addEventListener("click", () => openTaskModal());
+function openEditModal(task) {
+  const modal = document.getElementById("task-modal");
+  modal.classList.remove("hidden");
+  modal.dataset.mode = "edit";
+  modal.dataset.id = task._id;
 
-// ---------- SAVE / UPDATE ----------
-saveBtn.addEventListener("click", async () => {
-  const task = {
-    title: document.getElementById("task-title-input").value.trim(),
-    description: document.getElementById("task-desc-input").value.trim(),
+  document.getElementById("modal-title").textContent = "Edit Task";
+  document.getElementById("task-title-input").value = task.title;
+  document.getElementById("task-desc-input").value = task.description || "";
+  document.getElementById("task-date-input").value = task.date || "";
+  document.getElementById("task-time-input").value = task.time || "";
+  document.getElementById("task-duration-input").value = task.duration || "";
+}
+
+function closeModal() {
+  document.getElementById("task-modal").classList.add("hidden");
+}
+
+function clearModalInputs() {
+  ["task-title-input", "task-desc-input", "task-date-input", "task-time-input", "task-duration-input"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+}
+
+async function saveTask() {
+  const title = document.getElementById("task-title-input").value.trim();
+  if (!title) return alert("Please enter a task title.");
+
+  const data = {
+    title,
+    description: document.getElementById("task-desc-input").value,
     date: document.getElementById("task-date-input").value,
     time: document.getElementById("task-time-input").value,
     duration: document.getElementById("task-duration-input").value,
   };
-  if (!task.title) return alert("Please enter a task title.");
+
+  const modal = document.getElementById("task-modal");
+  const isEdit = modal.dataset.mode === "edit";
+  const method = isEdit ? "PUT" : "POST";
+  const url = isEdit ? `${API_BASE}/tasks/${modal.dataset.id}` : `${API_BASE}/tasks`;
 
   try {
-    const method = selectedTask ? "PUT" : "POST";
-    const url = selectedTask ? `${API_URL}/tasks/${selectedTask._id}` : `${API_URL}/tasks`;
-    await fetch(url, { method, headers, body: JSON.stringify(task) });
-    modal.classList.add("hidden");
-    openTaskListForDate(selectedDate);
-  } catch (err) {
-    console.error("Save failed:", err.message);
-  }
-});
-
-// ---------- DELETE ----------
-deleteBtn.addEventListener("click", async () => {
-  if (!selectedTask) return;
-  if (!confirm("Delete this task?")) return;
-
-  try {
-    await fetch(`${API_URL}/tasks/${selectedTask._id}`, {
-      method: "DELETE",
-      headers,
+    await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
-    modal.classList.add("hidden");
-    openTaskListForDate(selectedDate);
+    closeModal();
+    loadTasks();
   } catch (err) {
-    console.error("Delete failed:", err.message);
+    console.error("Failed to save:", err);
   }
-});
+}
 
-// ---------- LOGOUT ----------
-logoutBtn.addEventListener("click", () => {
-  localStorage.clear();
+async function deleteTask() {
+  const modal = document.getElementById("task-modal");
+  const id = modal.dataset.id;
+  if (!id || !confirm("Delete this task?")) return;
+
+  try {
+    await fetch(`${API_BASE}/tasks/${id}`, { method: "DELETE" });
+    closeModal();
+    loadTasks();
+  } catch (err) {
+    console.error("Failed to delete:", err);
+  }
+}
+
+function logout() {
+  localStorage.removeItem("user");
   window.location.href = "login.html";
-});
+}
 
-// ---------- INIT ----------
-renderCalendar();
-
-openTaskListForDate(selectedDate);
+function loadNotes() {
+  const notesArea = document.getElementById("notes-area");
+  notesArea.value = localStorage.getItem("dailyNotes") || "";
+  notesArea.addEventListener("input", () => {
+    localStorage.setItem("dailyNotes", notesArea.value);
+  });
+}

@@ -1,27 +1,35 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api";
+const API_URL = "https://taskboard-2llo.onrender.com/api"; // your backend base
+const form = document.getElementById("register-form");
+const message = document.getElementById("register-message");
 
-document.getElementById("register-form").addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  message.textContent = "Creating account…";
+  message.style.color = "var(--text-muted)";
 
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  if (!name || !email || !password) return alert("Please fill all fields");
+  const user = {
+    name: document.getElementById("name").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    password: document.getElementById("password").value.trim(),
+  };
 
   try {
-    const res = await fetch(`${API_URL}/auth/register`, {
+    const res = await fetch(`${API_URL}/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(user),
     });
 
     const data = await res.json();
+
     if (!res.ok) throw new Error(data.message || "Registration failed");
 
-    alert("Account created! Redirecting to login...");
-    window.location.href = "login.html";
+    message.textContent = "✅ Account created successfully! Redirecting…";
+    message.style.color = "lightgreen";
+
+    setTimeout(() => (window.location.href = "login.html"), 2000);
   } catch (err) {
-    alert("Error: " + err.message);
+    message.textContent = `❌ ${err.message}`;
+    message.style.color = "salmon";
   }
 });

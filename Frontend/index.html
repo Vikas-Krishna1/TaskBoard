@@ -1,94 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TaskBoard — Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="🗒️" />
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TaskBoard — Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="dashboard-body">
+    <header class="topbar">
+      <div class="brand">
+        <h1>🗒️ TaskBoard</h1>
+        <p class="subtitle">Plan, track, and reflect.</p>
+      </div>
+      <button id="logout-btn" class="logout-btn">Logout</button>
+    </header>
 
-<body class="dashboard-body">
-  <!-- HEADER -->
-  <header class="topbar">
-    <div class="brand">
-      <h1>🗒️ TaskBoard</h1>
-      <p class="subtitle">Plan • Track • Reflect</p>
-    </div>
-    <button id="logout-btn" class="logout-btn">Logout</button>
-  </header>
+    <main class="dashboard-grid">
+      <aside class="sidebar">
+        <h2>Tasks</h2>
+        <div id="task-list" class="task-list"></div>
+        <button id="add-task-btn" class="primary-btn full-width">+ Add Task</button>
+      </aside>
 
-  <!-- MAIN LAYOUT -->
-  <main class="layout">
-    <!-- LEFT SIDEBAR: TASK LIST -->
-    <aside class="sidebar-left">
-      <h2>Tasks</h2>
-      <div id="task-list" class="task-list"></div>
-      <button id="add-task-btn" class="primary-btn full-width">+ Add Task</button>
-    </aside>
+      <section class="calendar-section">
+        <h2 id="calendar-header">Calendar</h2>
+        <div id="calendar" class="calendar-grid"></div>
+      </section>
 
-    <!-- CENTER: CALENDAR -->
-    <section class="calendar-section">
-      <h2>Calendar</h2>
-      <div id="calendar" class="calendar-grid"></div>
+      <aside class="agenda-section">
+        <h2>Agenda (Week)</h2>
+        <div id="agenda-list" class="agenda-list"></div>
+      </aside>
+    </main>
+
+    <section class="notes-section">
+      <h2>Notes</h2>
+      <textarea id="notes-area" placeholder="Write your daily notes here..."></textarea>
     </section>
 
-    <!-- RIGHT SIDEBAR: AGENDA -->
-    <aside class="sidebar-right">
-      <h2>Agenda (This Week)</h2>
-      <div id="agenda-list" class="agenda-list"></div>
-    </aside>
-  </main>
-
-  <!-- NOTES AREA -->
-  <section class="notes-section">
-    <h2>Notes</h2>
-    <textarea
-      id="notes-area"
-      placeholder="Jot down quick ideas, reflections, or reminders..."
-    ></textarea>
-  </section>
-
-  <!-- TASK MODAL -->
-  <div id="task-modal" class="modal hidden">
-    <div class="modal-content">
-      <h3 id="modal-title">Add / Edit Task</h3>
-
-      <label for="task-title-input">Title</label>
-      <input id="task-title-input" placeholder="Task title" required />
-
-      <label for="task-desc-input">Description</label>
-      <textarea id="task-desc-input" placeholder="Details..."></textarea>
-
-      <div class="modal-grid">
-        <div>
-          <label for="task-date-input">Date</label>
-          <input id="task-date-input" type="date" />
+    <div id="task-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3 id="modal-title">Add/Edit Task</h3>
+        <input id="task-title-input" placeholder="Task title" required />
+        <textarea id="task-desc-input" placeholder="Details..."></textarea>
+        <input id="task-date-input" type="date" />
+        <input id="task-time-input" type="time" />
+        <input id="task-duration-input" type="number" placeholder="Duration (mins)" />
+        <div class="modal-actions">
+          <button id="save-task-btn" class="primary-btn">Save</button>
+          <button id="delete-task-btn" class="danger-btn">Delete</button>
+          <button id="close-modal-btn" class="ghost-btn">Close</button>
         </div>
-        <div>
-          <label for="task-time-input">Time</label>
-          <input id="task-time-input" type="time" />
-        </div>
-        <div>
-          <label for="task-duration-input">Duration</label>
-          <input id="task-duration-input" type="number" placeholder="Minutes" />
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button id="save-task-btn" class="primary-btn">💾 Save</button>
-        <button id="delete-task-btn" class="danger-btn">🗑️ Delete</button>
-        <button id="close-modal-btn" class="ghost-btn">Close</button>
       </div>
     </div>
-  </div>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <small>© 2025 TaskBoard | Matte Dark Notebook Edition ✍️</small>
-  </footer>
+    <footer class="footer">
+      <small>© 2025 TaskBoard | Matte Dark Edition</small>
+    </footer>
 
-  <!-- JS -->
-  <script src="dashboard.js"></script>
-</body>
+    <script src="dashboard.js"></script>
+  </body>
 </html>
