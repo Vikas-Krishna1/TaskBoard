@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="dashboard-body">
-    <!-- ===== Top Bar ===== -->
     <header class="topbar">
       <div class="brand">
         <h1>🗒️ TaskBoard</h1>
@@ -16,38 +15,33 @@
       <button id="logout-btn" class="logout-btn">Logout</button>
     </header>
 
-    <!-- ===== Main Dashboard Layout ===== -->
     <main class="dashboard-grid">
-      <!-- Tasks Sidebar -->
       <aside class="sidebar">
         <h2>Tasks</h2>
         <div id="task-list" class="task-list"></div>
         <button id="add-task-btn" class="primary-btn full-width">+ Add Task</button>
       </aside>
 
-      <!-- Calendar Section -->
       <section class="calendar-section">
-        <h2>Calendar</h2>
+        <div class="calendar-header">
+          <button id="prev-month" class="ghost-btn">◀</button>
+          <h2 id="calendar-header">Calendar</h2>
+          <button id="next-month" class="ghost-btn">▶</button>
+        </div>
         <div id="calendar" class="calendar-grid"></div>
       </section>
 
-      <!-- Agenda Section -->
       <aside class="agenda-section">
-        <h2>Agenda (Day)</h2>
+        <h2>Agenda (Week)</h2>
         <div id="agenda-list" class="agenda-list"></div>
       </aside>
     </main>
 
-    <!-- ===== Notes Section ===== -->
     <section class="notes-section">
       <h2>Notes</h2>
-      <textarea
-        id="notes-area"
-        placeholder="Write your daily notes here..."
-      ></textarea>
+      <textarea id="notes-area" placeholder="Write your daily notes here..."></textarea>
     </section>
 
-    <!-- ===== Task Modal ===== -->
     <div id="task-modal" class="modal hidden">
       <div class="modal-content">
         <h3 id="modal-title">Add/Edit Task</h3>
@@ -55,11 +49,7 @@
         <textarea id="task-desc-input" placeholder="Details..."></textarea>
         <input id="task-date-input" type="date" />
         <input id="task-time-input" type="time" />
-        <input
-          id="task-duration-input"
-          type="number"
-          placeholder="Duration (mins)"
-        />
+        <input id="task-duration-input" type="number" placeholder="Duration (mins)" />
         <div class="modal-actions">
           <button id="save-task-btn" class="primary-btn">Save</button>
           <button id="delete-task-btn" class="danger-btn">Delete</button>
@@ -68,12 +58,10 @@
       </div>
     </div>
 
-    <!-- ===== Footer ===== -->
     <footer class="footer">
       <small>© 2025 TaskBoard | Matte Dark Edition</small>
     </footer>
 
-    <!-- ===== Script ===== -->
     <script src="dashboard.js"></script>
   </body>
 </html>
