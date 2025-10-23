@@ -1,6 +1,6 @@
-// dashboard.js — Phase 3C (Interactive + Animated)
+// === dashboard.js — Final Polished Edition ===
 
-const API_BASE = "https://your-backend-url.onrender.com/api";
+const API_BASE = "https://taskboard-2llo.onrender.com/api";
 let tasks = [];
 let selectedDate = new Date().toISOString().split("T")[0];
 
@@ -20,6 +20,7 @@ function initDashboard() {
   loadNotes();
 }
 
+// === TASK MANAGEMENT ===
 async function loadTasks() {
   try {
     const res = await fetch(`${API_BASE}/tasks`);
@@ -53,18 +54,18 @@ function renderTaskList() {
       </div>
     `;
 
-    // Smooth animation
     taskEl.style.opacity = 0;
     list.appendChild(taskEl);
     setTimeout(() => (taskEl.style.opacity = 1), 50);
 
-    // Add listeners
     taskEl.addEventListener("click", (e) => {
       if (e.target.classList.contains("task-check")) return;
       openEditModal(task);
     });
 
-    taskEl.querySelector(".task-check").addEventListener("change", (e) => toggleTaskCompletion(task._id, e.target.checked));
+    taskEl.querySelector(".task-check").addEventListener("change", (e) =>
+      toggleTaskCompletion(task._id, e.target.checked)
+    );
   });
 }
 
@@ -104,36 +105,52 @@ function renderAgenda() {
   });
 }
 
+// === CALENDAR ===
 function renderCalendar() {
   const calendar = document.getElementById("calendar");
   calendar.innerHTML = "";
 
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const days = new Date(year, month + 1, 0).getDate();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
 
-  for (let day = 1; day <= days; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    const el = document.createElement("div");
-    el.className = "calendar-day";
-    if (dateStr === selectedDate) el.classList.add("selected");
-    if (dateStr === now.toISOString().split("T")[0]) el.classList.add("today");
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const startDay = firstDayOfMonth.getDay();
+
+  const header = document.getElementById("calendar-header");
+  const monthName = now.toLocaleString("default", { month: "long" });
+  header.textContent = `${monthName} ${currentYear}`;
+
+  for (let i = 0; i < startDay; i++) {
+    const empty = document.createElement("div");
+    empty.className = "calendar-empty";
+    calendar.appendChild(empty);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const dayEl = document.createElement("div");
+    dayEl.className = "calendar-day";
+
+    if (dateStr === now.toISOString().split("T")[0]) dayEl.classList.add("today");
+    if (dateStr === selectedDate) dayEl.classList.add("selected");
 
     const hasTask = tasks.some(t => t.date === dateStr);
-    if (hasTask) el.classList.add("has-task");
+    if (hasTask) dayEl.classList.add("has-task");
 
-    el.textContent = day;
-    el.addEventListener("click", () => {
+    dayEl.textContent = day;
+    dayEl.addEventListener("click", () => {
       selectedDate = dateStr;
       renderCalendar();
       renderAgenda();
     });
 
-    calendar.appendChild(el);
+    calendar.appendChild(dayEl);
   }
 }
 
+// === MODAL LOGIC ===
 function openAddModal() {
   const modal = document.getElementById("task-modal");
   modal.classList.remove("hidden");
