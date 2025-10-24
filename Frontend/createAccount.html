@@ -1,31 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TaskBoard — Create Account</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="auth-body">
-    <div class="auth-card">
+    <div class="auth-container">
       <h1>🗒️ TaskBoard</h1>
-      <p class="subtitle">Create your account to get started!</p>
+      <p class="subtitle">Create your account</p>
 
-      <form id="signup-form">
-        <input id="name" type="text" placeholder="Full Name" required />
-        <input id="email" type="email" placeholder="Email" required />
-        <input id="password" type="password" placeholder="Password" required />
-        <button type="submit" class="primary-btn full-width">Create Account</button>
+      <form id="create-form" class="auth-form">
+        <input type="text" id="name" placeholder="Full Name" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit" class="primary-btn gold-accent full-width">Sign Up</button>
       </form>
 
-      <p class="switch-link">
-        Already have an account? <a href="login.html">Login</a>
+      <p class="switch-text">
+        Already have an account?
+        <a href="#" id="go-to-login" class="gold-link">Login</a>
       </p>
     </div>
 
-    <script src="auth.js"></script>
-    <script>
-      document.getElementById("signup-form").addEventListener("submit", handleSignup);
-    </script>
+    <script type="module" src="createAccount.js"></script>
+    <script type="module" src="script.js"></script>
   </body>
 </html>

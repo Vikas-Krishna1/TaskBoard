@@ -1,50 +1,46 @@
-const API_BASE = "https://taskboard-2llo.onrender.com/api";
+// auth.js
+const API_BASE = "https://taskboard-2llo.onrender.com/api"; // update if needed
 
-// Handle Login
-async function handleLogin(e) {
-  e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
+export async function registerUser(userData) {
   try {
-    const res = await fetch(`${API_BASE}/login`, {
+    const res = await fetch(`${API_BASE}/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(userData),
     });
 
+    if (!res.ok) throw new Error("Registration failed.");
     const data = await res.json();
-    if (!res.ok) return alert(data.error || "Login failed");
-
-    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("user", JSON.stringify(data));
     window.location.href = "dashboard.html";
   } catch (err) {
-    console.error(err);
-    alert("Failed to connect to server");
+    alert("Error: " + err.message);
   }
 }
 
-// Handle Create Account
-async function handleSignup(e) {
-  e.preventDefault();
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
+export async function loginUser(credentials) {
   try {
-    const res = await fetch(`${API_BASE}/createAccount`, {
+    const res = await fetch(`${API_BASE}/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify(credentials),
     });
 
+    if (!res.ok) throw new Error("Invalid credentials.");
     const data = await res.json();
-    if (!res.ok) return alert(data.error || "Signup failed");
-
-    alert("Account created! You can log in now.");
-    window.location.href = "login.html";
+    localStorage.setItem("user", JSON.stringify(data));
+    window.location.href = "dashboard.html";
   } catch (err) {
-    console.error(err);
-    alert("Server error");
+    alert("Login failed: " + err.message);
   }
+}
+
+export function logoutUser() {
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+
+export function getCurrentUser() {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
 }

@@ -1,26 +1,24 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api";
+// login.js
+const API_BASE = "https://taskboard-2llo.onrender.com/api"; // update if needed
 
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
+import { loginUser } from "./auth.js";
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("login-form");
+  const signupLink = document.getElementById("go-to-signup");
 
-  if (!email || !password) return alert("Please fill all fields");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  try {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    if (!email || !password) return alert("Please fill in all fields.");
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Login failed");
+    loginUser({ email, password });
+  });
 
-    localStorage.setItem("token", data.token);
-    window.location.href = "index.html";
-  } catch (err) {
-    alert("Error: " + err.message);
-  }
+  signupLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = "createAccount.html";
+  });
 });

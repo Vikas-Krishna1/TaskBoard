@@ -1,35 +1,23 @@
-const API_URL = "https://taskboard-2llo.onrender.com/api"; // your backend base
-const form = document.getElementById("register-form");
-const message = document.getElementById("register-message");
+// createAccount.js
+import { registerUser } from "./auth.js";
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  message.textContent = "Creating account…";
-  message.style.color = "var(--text-muted)";
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("create-form");
+  const loginLink = document.getElementById("go-to-login");
 
-  const user = {
-    name: document.getElementById("name").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    password: document.getElementById("password").value.trim(),
-  };
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  try {
-    const res = await fetch(`${API_URL}/users/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(user),
-    });
+    if (!name || !email || !password) return alert("Please fill all fields.");
 
-    const data = await res.json();
+    registerUser({ name, email, password });
+  });
 
-    if (!res.ok) throw new Error(data.message || "Registration failed");
-
-    message.textContent = "✅ Account created successfully! Redirecting…";
-    message.style.color = "lightgreen";
-
-    setTimeout(() => (window.location.href = "login.html"), 2000);
-  } catch (err) {
-    message.textContent = `❌ ${err.message}`;
-    message.style.color = "salmon";
-  }
+  loginLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = "login.html";
+  });
 });

@@ -10,48 +10,56 @@
     <header class="topbar">
       <div class="brand">
         <h1>🗒️ TaskBoard</h1>
-        <p class="subtitle">Plan, track, and reflect.</p>
+        <p class="subtitle">Plan, track, and reflect</p>
       </div>
       <button id="logout-btn" class="logout-btn">Logout</button>
     </header>
 
     <main class="dashboard-grid">
+      <!-- Left: Task List -->
       <aside class="sidebar">
         <h2>Tasks</h2>
         <div id="task-list" class="task-list"></div>
-        <button id="add-task-btn" class="primary-btn full-width">+ Add Task</button>
+        <button id="add-task-btn" class="primary-btn gold-accent full-width">+ Add Task</button>
       </aside>
 
+      <!-- Middle: Calendar -->
       <section class="calendar-section">
         <div class="calendar-header">
-          <button id="prev-month" class="ghost-btn">◀</button>
-          <h2 id="calendar-header">Calendar</h2>
-          <button id="next-month" class="ghost-btn">▶</button>
+          <button id="prev-month" class="ghost-btn">‹</button>
+          <h2 id="calendar-title">October 2025</h2>
+          <button id="next-month" class="ghost-btn">›</button>
+        </div>
+        <div class="calendar-controls">
+          <button id="today-btn" class="small-btn gold-accent">Today</button>
+          <button id="week-btn" class="small-btn">Week View</button>
         </div>
         <div id="calendar" class="calendar-grid"></div>
       </section>
 
+      <!-- Right: Agenda -->
       <aside class="agenda-section">
         <h2>Agenda (Week)</h2>
         <div id="agenda-list" class="agenda-list"></div>
       </aside>
     </main>
 
+    <!-- Notes -->
     <section class="notes-section">
       <h2>Notes</h2>
       <textarea id="notes-area" placeholder="Write your daily notes here..."></textarea>
+      <button id="save-notes-btn" class="primary-btn gold-accent">Save Notes</button>
     </section>
 
+    <!-- Task Modal -->
     <div id="task-modal" class="modal hidden">
       <div class="modal-content">
         <h3 id="modal-title">Add/Edit Task</h3>
         <input id="task-title-input" placeholder="Task title" required />
         <textarea id="task-desc-input" placeholder="Details..."></textarea>
         <input id="task-date-input" type="date" />
-        <input id="task-time-input" type="time" />
-        <input id="task-duration-input" type="number" placeholder="Duration (mins)" />
         <div class="modal-actions">
-          <button id="save-task-btn" class="primary-btn">Save</button>
+          <button id="save-task-btn" class="primary-btn gold-accent">Save</button>
           <button id="delete-task-btn" class="danger-btn">Delete</button>
           <button id="close-modal-btn" class="ghost-btn">Close</button>
         </div>
@@ -59,9 +67,9 @@
     </div>
 
     <footer class="footer">
-      <small>© 2025 TaskBoard | Matte Dark Edition</small>
+      <small>© 2025 TaskBoard | Matte Gold Edition</small>
     </footer>
 
-    <script src="dashboard.js"></script>
+    <script type="module" src="dashboard.js"></script>
   </body>
 </html>

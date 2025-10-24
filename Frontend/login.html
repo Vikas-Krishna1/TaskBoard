@@ -1,30 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TaskBoard — Login</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body class="auth-body">
-    <div class="auth-card">
+    <div class="auth-container">
       <h1>🗒️ TaskBoard</h1>
-      <p class="subtitle">Welcome back! Please sign in.</p>
+      <p class="subtitle">Welcome back — please sign in.</p>
 
-      <form id="login-form">
-        <input id="email" type="email" placeholder="Email" required />
-        <input id="password" type="password" placeholder="Password" required />
-        <button type="submit" class="primary-btn full-width">Login</button>
+      <form id="login-form" class="auth-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit" class="primary-btn gold-accent full-width">Login</button>
       </form>
 
-      <p class="switch-link">
-        Don’t have an account? <a href="createAccount.html">Create one</a>
+      <p class="switch-text">
+        Don’t have an account?
+        <a href="#" id="go-to-signup" class="gold-link">Create one</a>
       </p>
     </div>
 
-    <script src="auth.js"></script>
-    <script>
-      document.getElementById("login-form").addEventListener("submit", handleLogin);
-    </script>
+    <script type="module" src="login.js"></script>
+    <script type="module" src="script.js"></script>
   </body>
 </html>
