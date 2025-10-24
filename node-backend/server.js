@@ -3,13 +3,13 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./db.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
-
-// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -17,20 +17,23 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
-}
+if (process.env.NODE_ENV !== "production") app.use(morgan("dev"));
 
-// Health check route
+// Static files (for frontend if needed)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, "../public")));
+
+// API routes
+app.use("/api/tasks", taskRoutes);
+app.use("/api/users", userRoutes);
+
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({ message: "✅ Server is healthy", time: new Date().toISOString() });
 });
 
-// Routes
-app.use("/api/tasks", taskRoutes);
-app.use("/api/users", userRoutes);
-
-// Fallback route
+// ✅ Fallback (Express 5 fix)
 app.use((req, res) => {
   res.status(404).json({ message: "Not Found - " + req.originalUrl });
 });

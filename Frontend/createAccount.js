@@ -1,23 +1,27 @@
-// createAccount.js
-import { registerUser } from "./auth.js";
+const API_BASE = "https://taskboard-2llo.onrender.com/api/users";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("create-form");
-  const loginLink = document.getElementById("go-to-login");
+document.getElementById("signup-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-    if (!name || !email || !password) return alert("Please fill all fields.");
+  try {
+    const res = await fetch(`${API_BASE}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
 
-    registerUser({ name, email, password });
-  });
+    const data = await res.json();
 
-  loginLink.addEventListener("click", (e) => {
-    e.preventDefault();
+    if (!res.ok) throw new Error(data.message || "Signup failed");
+
+    alert("✅ Account created successfully! Please log in.");
     window.location.href = "login.html";
-  });
+  } catch (err) {
+    alert("❌ " + err.message);
+    console.error(err);
+  }
 });
