@@ -3,7 +3,7 @@
 **TaskBoard** is a full-stack productivity web app that combines task management, a dynamic calendar, daily notes, and a weekly agenda — all wrapped in a sleek dark "notebook" design.
 
 ## 🚀 Live Demo
-- **Frontend (Netlify)**: [https://stellar-manatee-39411a.netlify.app](https://stellar-manatee-39411a.netlify.app)
+- **Frontend (Vercel)**: [https://task-board-rk8l.vercel.app/](https://task-board-rk8l.vercel.app/)
 - **Backend (Render)**: [https://taskboard-2llo.onrender.com](https://taskboard-2llo.onrender.com)
 
 ---
